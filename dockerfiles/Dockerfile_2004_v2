@@ -1,0 +1,67 @@
+# syntax=docker/dockerfile:1.7
+ARG RELEASE_BASE_IMAGE=kernel-fuzz-build:2004_v2-base
+ARG UBUNTU_2604_IMAGE=ubuntu:26.04@sha256:61ebaa5cc23ca45450db85eac015435199ec569e28ec222ea13f2aed2110b8a6
+ARG UBUNTU_2004_IMAGE=ubuntu:20.04@sha256:c664f8f86ed5a386b0a340d981b8f81714e21a8b9c73f658c4bea56aa179d54a
+FROM ${UBUNTU_2604_IMAGE} AS bootstrap-tools
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    debootstrap debian-archive-keyring && rm -rf /var/lib/apt/lists/*
+
+FROM ${UBUNTU_2004_IMAGE} AS base
+COPY dockerfiles/build/common.sh dockerfiles/build/install-base.sh /usr/local/lib/kernel-fuzz/
+RUN bash /usr/local/lib/kernel-fuzz/install-base.sh
+COPY --from=bootstrap-tools /usr/sbin/debootstrap /usr/sbin/debootstrap
+COPY --from=bootstrap-tools /usr/share/debootstrap/ /usr/share/debootstrap/
+COPY --from=bootstrap-tools /usr/share/keyrings/debian-archive-keyring.gpg /usr/share/keyrings/
+COPY --from=bootstrap-tools /usr/share/keyrings/debian-archive-removed-keys.gpg /usr/share/keyrings/
+
+FROM base AS tooling
+COPY dockerfiles/build/install-tooling.sh /usr/local/lib/kernel-fuzz/
+ARG GO_VERSION=1.24.8
+ARG GO_SHA256=6842c516ca66c89d648a7f1dbe28e28c47b61b59f8f06633eb2ceb1188e9251d
+ARG PYTHON_VERSION=3.10
+RUN bash /usr/local/lib/kernel-fuzz/install-tooling.sh
+
+FROM tooling AS compilers
+COPY dockerfiles/build/install-compilers.sh /usr/local/lib/kernel-fuzz/
+ARG GCC_VERSION=12.3.0
+ARG LLVM_VERSION=17.0.6
+ARG CVM_JOBS=16
+RUN --mount=type=cache,target=/root/.cvm/cache \
+    --mount=type=cache,target=/root/software \
+    bash /usr/local/lib/kernel-fuzz/install-compilers.sh
+
+FROM ${RELEASE_BASE_IMAGE} AS final
+ARG UBUNTU_2004_IMAGE
+ARG OCI_CREATED=unknown
+ARG OCI_REVISION=unknown
+ARG OCI_SOURCE=https://github.com/QGrain/kernel-fuzz-docker-images
+ARG OCI_VERSION=2004_v2
+ARG OCI_REF_NAME=qgrain/kernel-fuzz:2004_v2
+LABEL org.opencontainers.image.title="kernel-fuzz" \
+    org.opencontainers.image.description="Legacy Ubuntu 20.04 kernel fuzzing environment for older-kernel compatibility" \
+    org.opencontainers.image.created="${OCI_CREATED}" \
+    org.opencontainers.image.revision="${OCI_REVISION}" \
+    org.opencontainers.image.source="${OCI_SOURCE}" \
+    org.opencontainers.image.version="${OCI_VERSION}" \
+    org.opencontainers.image.ref.name="${OCI_REF_NAME}" \
+    org.opencontainers.image.url="https://hub.docker.com/r/qgrain/kernel-fuzz" \
+    org.opencontainers.image.licenses="Apache-2.0" \
+    org.opencontainers.image.vendor="QGrain" \
+    org.opencontainers.image.base.name="${UBUNTU_2004_IMAGE}"
+COPY dockerfiles/build/install-syzkaller.sh /usr/local/lib/kernel-fuzz/
+ARG SYZKALLER_COMMIT=6e83b42dcfcd13c3b8e0d5c803cdcc424c0fbff9
+ARG SYZKALLER_DATE=20250630
+RUN bash /usr/local/lib/kernel-fuzz/install-syzkaller.sh
+ENV SYZ_TEMPLATE_DISTRIBUTION=bullseye
+COPY dockerfiles/runtime/entrypoint.sh /usr/local/bin/kernel-fuzz-entrypoint
+COPY dockerfiles/runtime/init-template.py /usr/local/bin/kernel-fuzz-init-template
+COPY dockerfiles/runtime/smoke-test.sh /usr/local/bin/kernel-fuzz-smoke-test
+COPY dockerfiles/runtime/configure-image.sh /tmp/kernel-fuzz-configure-image.sh
+COPY dockerfiles/config/ /tmp/kernel-fuzz-config/
+RUN bash /tmp/kernel-fuzz-configure-image.sh && \
+    rm -rf /usr/local/lib/kernel-fuzz /tmp/kernel-fuzz-config \
+        /tmp/kernel-fuzz-configure-image.sh
+EXPOSE 22
+WORKDIR /root
+ENTRYPOINT ["/usr/local/bin/kernel-fuzz-entrypoint"]
+CMD ["/bin/bash"]

@@ -1,0 +1,15 @@
+.git
+.gitignore
+tmp
+**/__pycache__
+**/*.pyc
+**/.ssh
+**/.gnupg
+**/.env
+**/.bash_history
+**/*.img
+**/*.qcow2
+**/*.qcow2.*
+**/*.pem
+**/*_rsa
+**/*_rsa.pub

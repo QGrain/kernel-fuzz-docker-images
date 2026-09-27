@@ -1,0 +1,33 @@
+" 设置文件编码
+set encoding=utf-8
+set fileencoding=utf-8
+
+" 启用语法高亮
+syntax on
+
+" 显示行号
+set number
+
+" 启用鼠标支持
+set mouse=a
+
+" 显示光标所在行的下划线
+set cursorline
+
+" 启用搜索高亮
+set hlsearch
+
+" 启用增量搜索
+set incsearch
+
+" 忽略大小写搜索
+set ignorecase
+
+" 智能大小写搜索
+set smartcase
+
+" 启用状态栏
+set laststatus=2
+
+" 显示命令行补全
+set wildmenu

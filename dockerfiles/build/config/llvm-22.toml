@@ -1,0 +1,7 @@
+# LLVM 22 and cvm 0.1.2's default compiler-rt project/runtime combination
+# both create check-builtins. Build compiler-rt only as a runtime.
+[llvm]
+targets = "X86"
+projects = "clang;lld"
+runtimes = "compiler-rt"
+build_type = "Release"

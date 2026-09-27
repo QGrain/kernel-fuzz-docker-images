@@ -1,0 +1,23 @@
+# Shared environment for interactive shells and `bash -lc` automation.
+# No network proxy belongs in this file or in the published image.
+if [ "${KERNEL_FUZZ_ENV_LOADED:-}" = 1 ]; then
+    return 0
+fi
+KERNEL_FUZZ_ENV_LOADED=1
+go_roots=(/root/software/go[0-9]*)
+if [ "${#go_roots[@]}" -ne 1 ] || [ ! -x "${go_roots[0]}/bin/go" ]; then
+    echo 'Expected exactly one Go toolchain under /root/software/goX.Y.Z' >&2
+    return 1
+fi
+export GOROOT="${go_roots[0]}"
+export GOPATH=/root/software/gopath
+export CVM_HOME="$HOME/.cvm"
+export PATH="$GOROOT/bin:$GOPATH/bin:/opt/cmake/bin:$PATH"
+
+if [ -r /opt/miniforge/etc/profile.d/conda.sh ]; then
+    . /opt/miniforge/etc/profile.d/conda.sh
+    conda activate kernel-fuzz
+fi
+if [ -r "$CVM_HOME/cvm.sh" ]; then
+    . "$CVM_HOME/cvm.sh"
+fi

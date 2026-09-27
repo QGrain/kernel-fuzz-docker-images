@@ -1,0 +1,9 @@
+startup_message off
+defscrollback 10000
+vbell off
+term screen-256color
+shell /bin/bash
+hardstatus alwayslastline
+hardstatus string '%{= kW} %-w%{= kG}%{+b}[%n %t]%{-b}%{= kW}%+w %= %Y-%m-%d %c %{= kC}%H'
+bindkey ^[b prev
+bindkey ^[n next

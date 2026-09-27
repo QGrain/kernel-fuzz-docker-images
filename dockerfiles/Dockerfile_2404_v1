@@ -1,0 +1,67 @@
+# syntax=docker/dockerfile:1.7
+ARG RELEASE_BASE_IMAGE=kernel-fuzz-build:2404_v1-base
+ARG UBUNTU_2604_IMAGE=ubuntu:26.04@sha256:61ebaa5cc23ca45450db85eac015435199ec569e28ec222ea13f2aed2110b8a6
+ARG UBUNTU_2404_IMAGE=ubuntu:24.04@sha256:496754492fb28b4d3049432f2ca787449331e23fb14f0dd3fffea86bf5a93eb4
+FROM ${UBUNTU_2604_IMAGE} AS bootstrap-tools
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    debootstrap debian-archive-keyring && rm -rf /var/lib/apt/lists/*
+
+FROM ${UBUNTU_2404_IMAGE} AS base
+COPY dockerfiles/build/common.sh dockerfiles/build/install-base.sh /usr/local/lib/kernel-fuzz/
+RUN bash /usr/local/lib/kernel-fuzz/install-base.sh
+COPY --from=bootstrap-tools /usr/sbin/debootstrap /usr/sbin/debootstrap
+COPY --from=bootstrap-tools /usr/share/debootstrap/ /usr/share/debootstrap/
+COPY --from=bootstrap-tools /usr/share/keyrings/debian-archive-keyring.gpg /usr/share/keyrings/
+COPY --from=bootstrap-tools /usr/share/keyrings/debian-archive-removed-keys.gpg /usr/share/keyrings/
+
+FROM base AS tooling
+COPY dockerfiles/build/install-tooling.sh /usr/local/lib/kernel-fuzz/
+ARG GO_VERSION=1.26.5
+ARG GO_SHA256=5c2c3b16caefa1d968a94c1daca04a7ca301a496d9b086e17ad77bb81393f053
+ARG PYTHON_VERSION=3.12
+RUN bash /usr/local/lib/kernel-fuzz/install-tooling.sh
+
+FROM tooling AS compilers
+COPY dockerfiles/build/install-compilers.sh /usr/local/lib/kernel-fuzz/
+ARG GCC_VERSION=14.2.0
+ARG LLVM_VERSION=21.1.8
+ARG CVM_JOBS=16
+RUN --mount=type=cache,target=/root/.cvm/cache \
+    --mount=type=cache,target=/root/software \
+    bash /usr/local/lib/kernel-fuzz/install-compilers.sh
+
+FROM ${RELEASE_BASE_IMAGE} AS final
+ARG UBUNTU_2404_IMAGE
+ARG OCI_CREATED=unknown
+ARG OCI_REVISION=unknown
+ARG OCI_SOURCE=https://github.com/QGrain/kernel-fuzz-docker-images
+ARG OCI_VERSION=2404_v1
+ARG OCI_REF_NAME=qgrain/kernel-fuzz:2404_v1
+LABEL org.opencontainers.image.title="kernel-fuzz" \
+    org.opencontainers.image.description="Ubuntu 24.04 kernel fuzzing environment for x86_64 QEMU/KVM experiments" \
+    org.opencontainers.image.created="${OCI_CREATED}" \
+    org.opencontainers.image.revision="${OCI_REVISION}" \
+    org.opencontainers.image.source="${OCI_SOURCE}" \
+    org.opencontainers.image.version="${OCI_VERSION}" \
+    org.opencontainers.image.ref.name="${OCI_REF_NAME}" \
+    org.opencontainers.image.url="https://hub.docker.com/r/qgrain/kernel-fuzz" \
+    org.opencontainers.image.licenses="Apache-2.0" \
+    org.opencontainers.image.vendor="QGrain" \
+    org.opencontainers.image.base.name="${UBUNTU_2404_IMAGE}"
+COPY dockerfiles/build/install-syzkaller.sh /usr/local/lib/kernel-fuzz/
+ARG SYZKALLER_COMMIT=544adce92c4ed9bb14467417ab97dcb85ab6a8a5
+ARG SYZKALLER_DATE=20260723
+RUN bash /usr/local/lib/kernel-fuzz/install-syzkaller.sh
+ENV SYZ_TEMPLATE_DISTRIBUTION=trixie
+COPY dockerfiles/runtime/entrypoint.sh /usr/local/bin/kernel-fuzz-entrypoint
+COPY dockerfiles/runtime/init-template.py /usr/local/bin/kernel-fuzz-init-template
+COPY dockerfiles/runtime/smoke-test.sh /usr/local/bin/kernel-fuzz-smoke-test
+COPY dockerfiles/runtime/configure-image.sh /tmp/kernel-fuzz-configure-image.sh
+COPY dockerfiles/config/ /tmp/kernel-fuzz-config/
+RUN bash /tmp/kernel-fuzz-configure-image.sh && \
+    rm -rf /usr/local/lib/kernel-fuzz /tmp/kernel-fuzz-config \
+        /tmp/kernel-fuzz-configure-image.sh
+EXPOSE 22
+WORKDIR /root
+ENTRYPOINT ["/usr/local/bin/kernel-fuzz-entrypoint"]
+CMD ["/bin/bash"]

@@ -1,0 +1,8 @@
+# syntax=docker/dockerfile:1.7
+ARG TEMPLATE_IMAGE
+ARG BASE_IMAGE
+FROM ${TEMPLATE_IMAGE} AS template
+
+FROM ${BASE_IMAGE}
+COPY --from=template --chown=0:0 \
+    /root/images/image-template/ /root/images/image-template/
