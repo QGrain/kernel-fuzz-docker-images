@@ -36,7 +36,7 @@ test "$(head -n 1 /root/.bashrc)" = "$loader"
 test "$(passwd -S root | awk '{print $2}')" = L
 grep -Fxq 'PermitRootLogin yes' /etc/ssh/sshd_config.d/50-kernel-fuzz.conf
 grep -Fxq 'PasswordAuthentication yes' /etc/ssh/sshd_config.d/50-kernel-fuzz.conf
-grep -Fq 'guest template' /etc/motd
+grep -Fiq 'guest template' /etc/motd
 printf 'go=%s\n' "$(go version)"
 printf 'gcc=%s\n' "$(gcc -dumpfullversion)"
 printf 'clang=%s\n' "$(clang --version | head -n 1)"
