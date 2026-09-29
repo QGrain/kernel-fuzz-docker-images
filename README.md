@@ -181,9 +181,14 @@ fuzzing VMs, including `disk.id_rsa`. Treat it as public infrastructure for
 isolated experiments, not as a secret that can protect a networked or valuable
 guest.
 
-For a complete, reproducible local acceptance procedure, including toolchains,
-template cloning, KVM, package headers, SSH, and coding-agent shells, see
-[the Chinese manual verification checklist](docs/manual-verification_CN.md).
+Additional operational notes:
+
+- [Build cache and incremental rebuild notes, Chinese](docs/build-cache_CN.md)
+- [Manual verification checklist, Chinese](docs/manual-verification_CN.md)
+- [Pre-release checklist, Chinese](docs/release-checklist_CN.md)
+
+The verification checklist covers toolchains, template cloning, KVM, package
+headers, SSH, and coding-agent shells.
 
 ## Compatibility and scope
 

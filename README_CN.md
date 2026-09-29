@@ -154,9 +154,14 @@ root 密码默认处于 locked 状态。若需要密码 SSH，容器启动后执
 `disk.id_rsa`。它应被视为公开的实验基础设施，只能用于隔离的 throwaway VM，不能用于保护联网或有价值的
 guest。
 
-完整的人工验收步骤见
-[中文人工验证清单](docs/manual-verification_CN.md)，其中覆盖工具链、guest template、KVM、
-kernel headers/libs、SSH、以及 coding agent 的 `bash -lc` 操作亲和性。
+更多操作文档：
+
+- [构建缓存与增量迭代说明](docs/build-cache_CN.md)
+- [中文人工验证清单](docs/manual-verification_CN.md)
+- [发布前检查清单](docs/release-checklist_CN.md)
+
+人工验证清单覆盖工具链、guest template、KVM、kernel headers/libs、SSH、以及 coding agent
+的 `bash -lc` 操作亲和性。
 
 ## 兼容性边界
 

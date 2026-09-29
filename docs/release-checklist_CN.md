@@ -15,6 +15,24 @@ rg -n 'FROM ubuntu:[0-9]' dockerfiles && exit 1 || true
 
 ## 2. 从干净 commit 构建
 
+优先判断本次改动是否真的影响 `release-base`。如果只修改 README/docs、OCI labels、
+syzkaller pin、entrypoint、shell/vim/tmux/screen/sshd 配置、smoke test 或 guest template
+嵌入逻辑，复用已有 `kernel-fuzz-build:<tag>-base`，只重建 final 层：
+
+```bash
+docker image ls kernel-fuzz-build
+for tag in 2004_v2 2204_v3 2404_v1 2604_v1; do
+  bash scripts/build-image.sh "$tag" final
+  bash scripts/test-image.sh "qgrain/kernel-fuzz:$tag"
+done
+docker tag qgrain/kernel-fuzz:2404_v1 qgrain/kernel-fuzz:latest
+bash scripts/test-image.sh qgrain/kernel-fuzz:latest
+```
+
+只有修改 OS packages、Ubuntu digest、Go、CMake、Miniforge、cvm、GCC/LLVM 版本或
+`dockerfiles/build/install-{base,tooling,compilers,gcc,llvm}.sh` 等会改变工具链/基础环境的内容时，
+才重建昂贵的 `release-base`：
+
 ```bash
 for tag in 2004_v2 2204_v3 2404_v1 2604_v1; do
   CVM_JOBS="${CVM_JOBS:-32}" bash scripts/build-image.sh "$tag" release-base
@@ -25,8 +43,10 @@ docker tag qgrain/kernel-fuzz:2404_v1 qgrain/kernel-fuzz:latest
 bash scripts/test-image.sh qgrain/kernel-fuzz:latest
 ```
 
-`release-base` 会重建昂贵的编译器缓存层；只有修改 OS packages、Go、CMake、Miniforge、cvm、GCC/LLVM
-或 Ubuntu digest 时才需要重跑。只改 final 层时，可以只执行 `final`。
+注意：`release-base` 是本地中间镜像，不是 Docker Hub release。它能让 final 层快速迭代，但
+Dockerfile 的 `compilers` target 仍然依赖前面的 `base`/`tooling` 层；如果这些前序层或其脚本发生变化，
+直接执行 `release-base` 仍会触发 GCC/LLVM 重新构建。`cvm` 的下载/源码缓存可以减少网络开销，但不等价于
+可直接复用已安装的 `/root/.cvm/toolchains` 成品工具链。
 
 ## 3. OCI provenance
 
