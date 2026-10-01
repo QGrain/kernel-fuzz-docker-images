@@ -111,6 +111,9 @@ The expensive compiler boundary makes normal iteration incremental:
 # First build, or after changing packages/toolchains/Miniforge/Go/CMake.
 CVM_JOBS=32 bash scripts/build-image.sh 2404_v1 release-base
 
+# Deliberately rebuild image layers from scratch for release validation.
+KERNEL_FUZZ_NO_CACHE=1 CVM_JOBS=32 bash scripts/build-image.sh 2404_v1 release-base
+
 # After changing syzkaller pin, fzf ref, or final runtime configuration.
 bash scripts/build-image.sh 2404_v1 final
 
@@ -120,6 +123,9 @@ CVM_JOBS=32 bash scripts/build-image.sh 2404_v1 all
 
 `final` requires the corresponding local `kernel-fuzz-build:<tag>-base`; it
 does not silently rebuild it. This makes a base rebuild an explicit decision.
+`KERNEL_FUZZ_NO_CACHE=1` passes Docker BuildKit `--no-cache` for image layers;
+download/source cache mounts may still be reused to avoid unnecessary network
+traffic.
 For a final image, the helper embeds `/root/images/image-template` as the last
 layer. The 20.04/22.04 releases use Bullseye and the 24.04/26.04 releases use
 Trixie. Local template caches are tagged

@@ -63,10 +63,23 @@ for name in CVM_JOBS; do
     fi
 done
 
+no_cache_args=()
+case "${KERNEL_FUZZ_NO_CACHE:-0}" in
+    0|false|False|FALSE|no|No|NO|'') ;;
+    1|true|True|TRUE|yes|Yes|YES)
+        no_cache_args+=(--no-cache)
+        ;;
+    *)
+        echo 'KERNEL_FUZZ_NO_CACHE must be 0/1, false/true, or yes/no' >&2
+        exit 2
+        ;;
+esac
+
 build_target() {
     local docker_target=$1
     local output_image=$2
     docker buildx build --load --platform linux/amd64 \
+        "${no_cache_args[@]}" \
         --progress=plain --target "$docker_target" \
         --build-arg "RELEASE_BASE_IMAGE=$release_base_image" \
         "${build_args[@]}" \

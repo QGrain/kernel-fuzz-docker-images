@@ -20,6 +20,15 @@ CVM_JOBS=32 bash scripts/build-image.sh 2404_v1 release-base
 bash scripts/build-image.sh 2404_v1 final
 ```
 
+发布验收前如需故意丢弃 Docker layer cache，可加：
+
+```bash
+KERNEL_FUZZ_NO_CACHE=1 CVM_JOBS=32 bash scripts/build-image.sh 2404_v1 release-base
+KERNEL_FUZZ_NO_CACHE=1 bash scripts/build-image.sh 2404_v1 final
+```
+
+这会让 BuildKit 对镜像层使用 `--no-cache`；`RUN --mount=type=cache` 的下载/源码缓存仍可复用。
+
 ## 为什么改一点脚本有时仍会重编译 GCC/LLVM？
 
 Docker layer cache 是按 Dockerfile 指令、复制进去的文件内容、build args 和父层 digest 计算的。

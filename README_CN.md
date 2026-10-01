@@ -100,6 +100,9 @@ bash scripts/test-image.sh qgrain/kernel-fuzz:2404_v1
 # 首次构建，或修改 OS 包、Go、CMake、Miniforge、cvm/GCC/LLVM 版本后执行。
 CVM_JOBS=32 bash scripts/build-image.sh 2404_v1 release-base
 
+# 发布验收前故意从零重建镜像层。
+KERNEL_FUZZ_NO_CACHE=1 CVM_JOBS=32 bash scripts/build-image.sh 2404_v1 release-base
+
 # 只修改 syzkaller pin、fzf ref、运行时配置、README 以外的 final 层内容后执行。
 bash scripts/build-image.sh 2404_v1 final
 
@@ -108,7 +111,9 @@ CVM_JOBS=32 bash scripts/build-image.sh 2404_v1 all
 ```
 
 `final` 目标要求本机已经存在对应的 `kernel-fuzz-build:<tag>-base`，不会悄悄重建它。
-这能让“是否重建昂贵编译器层”成为一个明确决策。final 镜像最后会嵌入
+这能让“是否重建昂贵编译器层”成为一个明确决策。`KERNEL_FUZZ_NO_CACHE=1`
+会为 Docker BuildKit 镜像层传递 `--no-cache`；下载/源码 cache mount 仍可能复用，以避免无意义的网络流量。
+final 镜像最后会嵌入
 `/root/images/image-template`：20.04/22.04 使用 Bullseye，24.04/26.04 使用 Trixie。
 本地模板缓存 tag 为 `kernel-fuzz-template-cache:{bullseye,trixie}`。只有在开发一个故意不带
 guest template 的镜像时，才应设置 `KERNEL_FUZZ_EMBED_TEMPLATE=0`。

@@ -35,8 +35,9 @@ bash scripts/test-image.sh qgrain/kernel-fuzz:latest
 
 ```bash
 for tag in 2004_v2 2204_v3 2404_v1 2604_v1; do
-  CVM_JOBS="${CVM_JOBS:-32}" bash scripts/build-image.sh "$tag" release-base
-  bash scripts/build-image.sh "$tag" final
+  KERNEL_FUZZ_NO_CACHE="${KERNEL_FUZZ_NO_CACHE:-0}" CVM_JOBS="${CVM_JOBS:-32}" \
+    bash scripts/build-image.sh "$tag" release-base
+  KERNEL_FUZZ_NO_CACHE="${KERNEL_FUZZ_NO_CACHE:-0}" bash scripts/build-image.sh "$tag" final
   bash scripts/test-image.sh "qgrain/kernel-fuzz:$tag"
 done
 docker tag qgrain/kernel-fuzz:2404_v1 qgrain/kernel-fuzz:latest
