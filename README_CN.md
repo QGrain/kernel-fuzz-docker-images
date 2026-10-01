@@ -67,9 +67,13 @@ Go 安装在 `/root/software/goX.Y.Z`，`GOPATH=/root/software/gopath`。预置 
 `make`，因此默认没有 `bin/syz-manager`；用户应在具体实验容器中按目标架构和配置自行构建。
 待测 kernel 也同理，不预编译进镜像。
 
+fzf 通过官方 git 安装方式预置在 `/root/.fzf`，版本由各 Dockerfile 中的 `FZF_REF`
+固定。安装脚本使用 `--no-update-rc`，不会直接改写 `.bashrc`；PATH 和交互式 Bash
+集成由本仓库的 shell 配置统一接管。
+
 公共开发环境变量集中在 `/root/.bash_env`。`/root/.profile` 和 `/root/.bashrc`
 会在开头加载它，并且 `.bashrc` 的加载语句位于非交互 early-return 之前。因此人工登录 shell
-和 coding agent 常用的 `docker exec NAME bash -lc 'CMD'` 都能拿到同一套 Go、cvm、Conda
+和 coding agent 常用的 `docker exec NAME bash -lc 'CMD'` 都能拿到同一套 Go、cvm、Conda、fzf
 环境。构建期脚本不会留在 `/usr/local/lib/kernel-fuzz`；最终镜像只保留
 `/usr/local/bin/kernel-fuzz-*` 等运行时命令。
 
@@ -96,7 +100,7 @@ bash scripts/test-image.sh qgrain/kernel-fuzz:2404_v1
 # 首次构建，或修改 OS 包、Go、CMake、Miniforge、cvm/GCC/LLVM 版本后执行。
 CVM_JOBS=32 bash scripts/build-image.sh 2404_v1 release-base
 
-# 只修改 syzkaller pin、运行时配置、README 以外的 final 层内容后执行。
+# 只修改 syzkaller pin、fzf ref、运行时配置、README 以外的 final 层内容后执行。
 bash scripts/build-image.sh 2404_v1 final
 
 # 同时构建 release-base 和 final；不指定第二个参数时默认如此。

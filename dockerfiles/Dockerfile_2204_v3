@@ -41,6 +41,9 @@ COPY dockerfiles/build/install-syzkaller.sh /usr/local/lib/kernel-fuzz/
 ARG SYZKALLER_COMMIT=6e83b42dcfcd13c3b8e0d5c803cdcc424c0fbff9
 ARG SYZKALLER_DATE=20250630
 RUN bash /usr/local/lib/kernel-fuzz/install-syzkaller.sh
+ARG FZF_REF=v0.74.4
+RUN git clone --depth 1 --branch "${FZF_REF}" https://github.com/junegunn/fzf.git /root/.fzf && \
+    /root/.fzf/install --all --no-update-rc
 ENV SYZ_TEMPLATE_DISTRIBUTION=bullseye
 COPY dockerfiles/runtime/entrypoint.sh /usr/local/bin/kernel-fuzz-entrypoint
 COPY dockerfiles/runtime/init-template.py /usr/local/bin/kernel-fuzz-init-template

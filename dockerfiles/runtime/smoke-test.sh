@@ -7,6 +7,8 @@ test "$(id -u)" = 0
 test "$(command -v go)" = "$GOROOT/bin/go"
 test "$GOPATH" = /root/software/gopath
 test "$(command -v python)" = /opt/miniforge/envs/kernel-fuzz/bin/python
+test "$(command -v fzf)" = /root/.fzf/bin/fzf
+fzf --version | grep -Eq '^[0-9]+[.][0-9]+[.]'
 test "$(command -v gcc)" = "/root/.cvm/toolchains/gcc/$(< /root/.cvm/defaults/gcc)/bin/gcc"
 test "$(command -v clang)" = "/root/.cvm/toolchains/llvm/$(< /root/.cvm/defaults/llvm)/bin/clang"
 test -x /usr/bin/qemu-system-x86_64
@@ -41,4 +43,5 @@ printf 'go=%s\n' "$(go version)"
 printf 'gcc=%s\n' "$(gcc -dumpfullversion)"
 printf 'clang=%s\n' "$(clang --version | head -n 1)"
 printf 'python=%s\n' "$(python --version)"
+printf 'fzf=%s\n' "$(fzf --version)"
 printf 'syzqemuctl=%s\n' "$(syzqemuctl --version | head -n 1)"

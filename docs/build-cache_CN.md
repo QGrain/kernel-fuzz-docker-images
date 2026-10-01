@@ -5,7 +5,7 @@
 | 边界 | 本地 tag | 作用 | 是否推送 |
 | --- | --- | --- | --- |
 | release-base | `kernel-fuzz-build:<tag>-base` | OS 包、Go、CMake、Miniforge、cvm、GCC/LLVM 等昂贵环境 | 不推送 |
-| final | `qgrain/kernel-fuzz:<tag>` | syzkaller 源码、运行时配置、banner、shell 配置、guest template、OCI labels | 发布对象 |
+| final | `qgrain/kernel-fuzz:<tag>` | syzkaller 源码、fzf、运行时配置、banner、shell 配置、guest template、OCI labels | 发布对象 |
 
 常规迭代应优先执行：
 
@@ -30,7 +30,7 @@ Ubuntu digest
   -> base: install-base.sh
   -> tooling: install-tooling.sh
   -> compilers: install-compilers.sh / install-gcc.sh / install-llvm.sh
-  -> final: syzkaller + runtime config + labels
+  -> final: syzkaller + fzf + runtime config + labels
 ```
 
 因此，如果修改的是 `install-base.sh`、`install-tooling.sh` 或 Ubuntu digest，后面的 compiler layer
@@ -46,7 +46,7 @@ Ubuntu digest
 1. 只改 final 层内容时，直接执行 `bash scripts/build-image.sh <tag> final`。
 2. 不要用 `all` 作为默认肌肉记忆；`all` 等价于先重建 `release-base` 再重建 final。
 3. 改 README/docs 不需要构建镜像；如果为了更新 OCI revision，要先 commit，再重建 final。
-4. 改 banner、vimrc、tmux、screen、entrypoint、smoke test、syzkaller pin，通常只需要重建 final。
+4. 改 banner、vimrc、tmux、screen、entrypoint、smoke test、syzkaller pin、fzf ref，通常只需要重建 final。
 5. 改 apt 包、Go/CMake/Miniforge/cvm、GCC/LLVM 版本或 Ubuntu digest，才重建 release-base。
 
 本仓库的 final stage 把 OCI labels 放在较靠后的层，避免每次 `OCI_CREATED` 改变都使 syzkaller

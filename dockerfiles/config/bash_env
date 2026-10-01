@@ -14,6 +14,17 @@ export GOPATH=/root/software/gopath
 export CVM_HOME="$HOME/.cvm"
 export PATH="$GOROOT/bin:$GOPATH/bin:/opt/cmake/bin:$PATH"
 
+if [ -d "$HOME/.fzf/bin" ]; then
+    case ":$PATH:" in
+        *":$HOME/.fzf/bin:"*) ;;
+        *) export PATH="$HOME/.fzf/bin:$PATH" ;;
+    esac
+fi
+
+if [[ $- == *i* ]] && [ -r "$HOME/.fzf.bash" ]; then
+    . "$HOME/.fzf.bash"
+fi
+
 if [ -r /opt/miniforge/etc/profile.d/conda.sh ]; then
     . /opt/miniforge/etc/profile.d/conda.sh
     conda activate kernel-fuzz

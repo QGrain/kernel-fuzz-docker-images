@@ -124,6 +124,7 @@ done
 | Go | `GOROOT=/root/software/goX.Y.Z`，`GOPATH=/root/software/gopath` |
 | GCC/LLVM | 默认来自 `/root/.cvm/toolchains/...` |
 | Python | `python` 来自 `/opt/miniforge/envs/kernel-fuzz/bin/python` |
+| fzf | `fzf` 来自 `/root/.fzf/bin/fzf`，可用于交互式 fuzzy finding |
 | syzkaller | 存在固定 commit 源码，有 `.git` 和 `Makefile`，没有预编译 `bin/syz-manager` |
 | template | `/root/images/image-template` 为 `Ready` |
 | sshd | root 登录和密码登录策略存在，但 root 密码仍为 locked |
@@ -143,6 +144,7 @@ for name in kf2004 kf2204 kf2404 kf2604; do
     printf "clang: "; clang --version | head -n 1
     printf "cmake: "; cmake --version | head -n 1
     printf "python: "; python --version
+    printf "fzf: "; fzf --version
     printf "conda env: %s\n" "$CONDA_DEFAULT_ENV"
     printf "syzqemuctl: "; syzqemuctl --version | head -n 1
     printf "cvm: "; cvm --version
@@ -152,12 +154,12 @@ done
 
 期望版本：
 
-| 容器 | GCC | LLVM/Clang | Go | Python | template |
-| --- | --- | --- | --- | --- | --- |
-| `kf2004` | 12.3.0 | 17.0.6 | 1.24.8 | 3.10 | Bullseye |
-| `kf2204` | 13.4.0 | 19.1.7 | 1.24.8 | 3.10 | Bullseye |
-| `kf2404` | 14.2.0 | 21.1.8 | 1.26.5 | 3.12 | Trixie |
-| `kf2604` | 15.3.0 | 22.1.8 | 1.26.5 | 3.14 | Trixie |
+| 容器 | GCC | LLVM/Clang | Go | Python | fzf | template |
+| --- | --- | --- | --- | --- | --- | --- |
+| `kf2004` | 12.3.0 | 17.0.6 | 1.24.8 | 3.10 | 0.74.4 | Bullseye |
+| `kf2204` | 13.4.0 | 19.1.7 | 1.24.8 | 3.10 | 0.74.4 | Bullseye |
+| `kf2404` | 14.2.0 | 21.1.8 | 1.26.5 | 3.12 | 0.74.4 | Trixie |
+| `kf2604` | 15.3.0 | 22.1.8 | 1.26.5 | 3.14 | 0.74.4 | Trixie |
 
 ## 5. syzkaller 源码而非预编译产物
 
@@ -374,6 +376,7 @@ docker exec kf2404 bash -lc '
   set -Eeuo pipefail
   test "$CONDA_DEFAULT_ENV" = kernel-fuzz
   test "$(command -v python)" = /opt/miniforge/envs/kernel-fuzz/bin/python
+  test "$(command -v fzf)" = /root/.fzf/bin/fzf
   test "$(command -v go)" = "$GOROOT/bin/go"
   test "$GOPATH" = /root/software/gopath
   test "$(command -v gcc)" = "/root/.cvm/toolchains/gcc/$(< /root/.cvm/defaults/gcc)/bin/gcc"
@@ -423,6 +426,7 @@ kernel-fuzz Docker image
 - Guest template SSH key material under /root/images/image-template is public fuzzing infrastructure.
   Use it only for isolated throwaway VMs; do not rely on it to protect networked or valuable guests.
 - Go, cvm, Conda, and compiler paths are loaded from /root/.bash_env for both interactive shells and `bash -lc`.
+- fzf is installed under /root/.fzf; bash integration is enabled for interactive shells.
 - No proxy is stored in this image. Pass proxy variables at build or runtime only when needed.
 ```
 

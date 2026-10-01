@@ -16,7 +16,7 @@ rg -n 'FROM ubuntu:[0-9]' dockerfiles && exit 1 || true
 ## 2. 从干净 commit 构建
 
 优先判断本次改动是否真的影响 `release-base`。如果只修改 README/docs、OCI labels、
-syzkaller pin、entrypoint、shell/vim/tmux/screen/sshd 配置、smoke test 或 guest template
+syzkaller pin、fzf ref、entrypoint、shell/vim/tmux/screen/sshd 配置、smoke test 或 guest template
 嵌入逻辑，复用已有 `kernel-fuzz-build:<tag>-base`，只重建 final 层：
 
 ```bash

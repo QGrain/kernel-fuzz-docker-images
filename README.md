@@ -42,7 +42,7 @@ Each release Dockerfile starts from a digest-qualified upstream Ubuntu base and
 has these stages: `base` (OS packages), `tooling` (Go, CMake, Miniforge, cvm),
 and `compilers` (GCC and LLVM). The `compilers` target is tagged locally as
 `kernel-fuzz-build:<tag>-base`; `final` then uses that exact local image and
-adds the fixed syzkaller source, runtime configuration, and guest template.
+adds the fixed syzkaller source, fzf, runtime configuration, and guest template.
 The Ubuntu manifest digest is pinned so a release rebuild starts from the same
 root filesystem. Apt packages and Debian guest packages are still resolved at
 build time, so this is not bit-for-bit package-level reproducibility.
@@ -75,9 +75,14 @@ Go is installed at `/root/software/goX.Y.Z`, with
 the image build does not run `make`, so there is no prebuilt `bin/` directory.
 Build it in the working container for the target you need.
 
+fzf is installed from the upstream git repository at `/root/.fzf` using the
+pinned `FZF_REF` in each Dockerfile. The installer runs with `--no-update-rc`;
+PATH and interactive Bash integration are wired through this repository's shell
+configuration instead of letting fzf edit `.bashrc` directly.
+
 `/root/.bash_env` is loaded by both `/root/.profile` and `/root/.bashrc`
 before Bash's non-interactive early return. Consequently an interactive shell
-and `docker exec NAME bash -lc '…'` receive the same Go, cvm, and Conda
+and `docker exec NAME bash -lc '…'` receive the same Go, cvm, Conda, and fzf
 environment. Build-only helpers are removed from `/usr/local/lib/kernel-fuzz`;
 the retained runtime commands are under `/usr/local/bin`.
 
@@ -106,7 +111,7 @@ The expensive compiler boundary makes normal iteration incremental:
 # First build, or after changing packages/toolchains/Miniforge/Go/CMake.
 CVM_JOBS=32 bash scripts/build-image.sh 2404_v1 release-base
 
-# After changing fixed syzkaller source selection or final runtime configuration.
+# After changing syzkaller pin, fzf ref, or final runtime configuration.
 bash scripts/build-image.sh 2404_v1 final
 
 # Both phases (the default when no second argument is supplied).
