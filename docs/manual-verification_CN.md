@@ -128,7 +128,7 @@ done
 | syzkaller | 存在固定 commit 源码，有 `.git` 和 `Makefile`，没有预编译 `bin/syz-manager` |
 | template | `/root/images/image-template` 为 `Ready` |
 | sshd | root 登录和密码登录策略存在，但 root 密码仍为 locked |
-| `/etc/motd` | 提示 root locked、syzkaller source、guest template key、`.bash_env` 和 proxy 边界 |
+| `/etc/motd` | boxed banner，提示 root locked、syzqemuctl 管理 `/root/images`、cvm/`.bash_env` 和 proxy 边界 |
 | `/usr/local/lib/kernel-fuzz` | final 镜像中不存在 |
 | `/root/fuzzers/default-syzkaller-path` | 不存在 |
 
@@ -419,15 +419,19 @@ docker exec kf2404-work bash -lc '
 镜像内置的 `/etc/motd` 应保持类似如下的简洁信息：
 
 ```text
-kernel-fuzz Docker image
-
-- Root password is locked by default. Run `passwd` or add authorized_keys before SSH login.
-- Pinned syzkaller source is under /root/fuzzers/; build it inside your experiment container.
-- Guest template SSH key material under /root/images/image-template is public fuzzing infrastructure.
-  Use it only for isolated throwaway VMs; do not rely on it to protect networked or valuable guests.
-- Go, cvm, Conda, and compiler paths are loaded from /root/.bash_env for both interactive shells and `bash -lc`.
-- fzf is installed under /root/.fzf; bash integration is enabled for interactive shells.
-- No proxy is stored in this image. Pass proxy variables at build or runtime only when needed.
++------------------------------------------------------------------------------+
+| kernel-fuzz Docker image                                                     |
++------------------------------------------------------------------------------+
+| 1. Root password is locked by default; run passwd or add authorized_keys     |
+|    before SSH login.                                                         |
+| 2. QEMU images for kernel testing are managed by syzqemuctl under            |
+|    /root/images; refer https://github.com/QGrain/syzqemuctl for details.     |
+| 3. Go/cvm/Conda/compiler paths are loaded from /root/.bash_env for both      |
+|    interactive shells and bash -lc; refer https://github.com/QGrain/cvm      |
+|    for details.                                                              |
+| 4. No proxy is stored in this image; configure runtime proxy only when       |
+|    needed, e.g. in /root/.bash_env inside your own container.                |
++------------------------------------------------------------------------------+
 ```
 
 这份 MOTD 是登录后的使用须知，不是 pre-auth SSH banner。

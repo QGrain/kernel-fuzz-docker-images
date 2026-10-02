@@ -1,9 +1,13 @@
-kernel-fuzz Docker image
-
-- Root password is locked by default. Run passwd or add authorized_keys before SSH login.
-- Pinned syzkaller source is under /root/fuzzers/; build it inside your experiment container.
-- Guest template SSH key material under /root/images/image-template is public fuzzing infrastructure.
-  Use it only for isolated throwaway VMs; do not rely on it to protect networked or valuable guests.
-- Go, cvm, Conda, and compiler paths are loaded from /root/.bash_env for interactive shells and bash -lc.
-- fzf is installed under /root/.fzf; bash integration is enabled for interactive shells.
-- No proxy is stored in this image. Pass proxy variables at build or runtime only when needed.
++------------------------------------------------------------------------------+
+| kernel-fuzz Docker image                                                     |
++------------------------------------------------------------------------------+
+| 1. Root password is locked by default; run passwd or add authorized_keys     |
+|    before SSH login.                                                         |
+| 2. QEMU images for kernel testing are managed by syzqemuctl under            |
+|    /root/images; refer https://github.com/QGrain/syzqemuctl for details.     |
+| 3. Go/cvm/Conda/compiler paths are loaded from /root/.bash_env for both      |
+|    interactive shells and bash -lc; refer https://github.com/QGrain/cvm      |
+|    for details.                                                              |
+| 4. No proxy is stored in this image; configure runtime proxy only when       |
+|    needed, e.g. in /root/.bash_env inside your own container.                |
++------------------------------------------------------------------------------+

@@ -7,6 +7,7 @@ install -m 0644 "$config_dir/vimrc" /root/.vimrc
 install -m 0644 "$config_dir/screenrc" /root/.screenrc
 install -m 0644 "$config_dir/tmux.conf" /root/.tmux.conf
 install -m 0644 "$config_dir/motd" /etc/motd
+printf '\n\n' >>/etc/motd
 install -m 0644 "$config_dir/sshd-kernel-fuzz.conf" \
     /etc/ssh/sshd_config.d/50-kernel-fuzz.conf
 

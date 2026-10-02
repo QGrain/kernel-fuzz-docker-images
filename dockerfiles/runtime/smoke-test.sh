@@ -38,7 +38,10 @@ test "$(head -n 1 /root/.bashrc)" = "$loader"
 test "$(passwd -S root | awk '{print $2}')" = L
 grep -Fxq 'PermitRootLogin yes' /etc/ssh/sshd_config.d/50-kernel-fuzz.conf
 grep -Fxq 'PasswordAuthentication yes' /etc/ssh/sshd_config.d/50-kernel-fuzz.conf
-grep -Fiq 'guest template' /etc/motd
+grep -Fq 'QEMU images for kernel testing are managed by syzqemuctl' /etc/motd
+grep -Fq 'refer https://github.com/QGrain/syzqemuctl for details' /etc/motd
+grep -Fq 'refer https://github.com/QGrain/cvm' /etc/motd
+grep -Fq 'No proxy is stored in this image' /etc/motd
 printf 'go=%s\n' "$(go version)"
 printf 'gcc=%s\n' "$(gcc -dumpfullversion)"
 printf 'clang=%s\n' "$(clang --version | head -n 1)"
