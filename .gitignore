@@ -3,3 +3,6 @@ CLAUDE.md
 tmp/
 __pycache__/
 *.pyc
+
+# Local copy-paste draft for the Docker Hub repository overview.
+docs/dockerhub-overview.md

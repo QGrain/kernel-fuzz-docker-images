@@ -80,9 +80,19 @@ sshd 默认启动以方便容器登录；root 密码默认 locked。只通过 `d
 ```bash
 git push origin main
 docker login -u qgrain
+
+docker tag qgrain/kernel-fuzz:2404_v1 qgrain/kernel-fuzz:latest
+
 for tag in 2004_v2 2204_v3 2404_v1 2604_v1 latest; do
   docker push "qgrain/kernel-fuzz:$tag"
 done
 ```
 
-发布后用 `docker buildx imagetools inspect qgrain/kernel-fuzz:<tag>` 检查公开 tag 是否可解析。
+发布后用以下命令检查公开 tag 是否可解析，尤其确认 `latest` 已经存在且 digest 与
+`2404_v1` 一致：
+
+```bash
+for tag in 2004_v2 2204_v3 2404_v1 2604_v1 latest; do
+  docker buildx imagetools inspect "qgrain/kernel-fuzz:$tag"
+done
+```

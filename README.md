@@ -20,10 +20,9 @@ under test; the latter runs in a guest VM. ARM64/Android guests are deferred.
 | `2404_v1` | 24.04 | 14.2.0 | 21.1.8 | 1.26.5 | 3.12 | `544adce` (2026-07-23) |
 | `2604_v1` | 26.04 | 15.3.0 | 22.1.8 | 1.26.5 | 3.14 | `544adce` (2026-07-23) |
 
-`latest` is intended to track the broadly compatible `2404_v1` release after
-all local checks pass. `2004_v2` is kept as a legacy compatibility image for
-older kernel experiments; prefer `2404_v1` for new work unless a specific old
-userspace is required.
+`latest` tracks the broadly compatible `2404_v1` release. `2004_v2` is kept
+as a legacy compatibility image for older kernel experiments; prefer
+`2404_v1` for new work unless a specific old userspace is required.
 
 ## Layout and image layers
 
@@ -194,6 +193,7 @@ guest.
 
 Additional operational notes:
 
+- [Image contents and configuration inventory](docs/image-contents.md)
 - [Build cache and incremental rebuild notes, Chinese](docs/build-cache_CN.md)
 - [Manual verification checklist, Chinese](docs/manual-verification_CN.md)
 - [Pre-release checklist, Chinese](docs/release-checklist_CN.md)
